@@ -23,7 +23,7 @@ bot.start(async (ctx) => {
   ctx.session.current_step = steps.EXTRA_INFO;
   ctx.session.userData = { id: ctx.message.from.id, telegram_username: ctx.message.from?.username };
 
-  return ctx.reply(messages.extraInfo, renderButtons(buttons.extraInfo));
+  return ctx.replyWithHTML(messages.extraInfo, renderButtons(buttons.extraInfo));
 });
 
 bot.on("message", async (ctx) => {
@@ -35,10 +35,14 @@ bot.on("message", async (ctx) => {
   }
 
   if (ctx.session.current_step === steps.ABOUT_ME) {
-    ctx.session.current_step = steps.CHECK_RAM;
-    ctx.session.userData.about_me = ctx.update.message.text;
+    if (ctx.update.message.text.length < 200) {
+      return ctx.reply(messages.tellMore);
+    } else {
+      ctx.session.current_step = steps.CHECK_RAM;
+      ctx.session.userData.about_me = ctx.update.message.text;
 
-    return ctx.reply(messages.checkRam, renderButtons(buttons.checkRam));
+      return ctx.reply(messages.checkRam, renderButtons(buttons.checkRam));
+    }
   }
 
   if (ctx.session.current_step === steps.CHECK_RAM) {
@@ -98,7 +102,10 @@ const onClickButton = (id, title) => {
         ctx.session.current_step = steps.HOW_KNOW_ABOUT_US;
 
         if (id.includes("success")) return ctx.reply(messages.howKnowAboutUs);
-        if (id.includes("failed")) return ctx.reply(messages.lastMessage);
+        if (id.includes("failed")) {
+          ctx.session.current_step = steps.FINISH;
+          return ctx.reply(messages.lastMessage);
+        }
       }
 
       if (ctx.session.current_step === steps.CHECK_RAM) {
@@ -132,7 +139,10 @@ const onClickButton = (id, title) => {
           // await ctx.replyWithPhoto({ source: "./img/test.png" });
           return ctx.reply(messages.test);
         }
-        if (id.includes("failed")) return ctx.reply(messages.lastMessage);
+        if (id.includes("failed")) {
+          ctx.session.current_step = steps.FINISH;
+          return ctx.reply(messages.lastMessage);
+        }
       }
 
       if (ctx.session.current_step === steps.SALARY) {
@@ -148,6 +158,11 @@ const onClickButton = (id, title) => {
 
         await writeAnswers.writeData(ctx.session.userData);
         return ctx.reply(messages.finish);
+      }
+
+      // ...
+      if (ctx.session.current_step === steps.FINISH) {
+        return bot.stop();
       }
     } catch (error) {
       // ...
