@@ -88,7 +88,7 @@ bot.on("message", async (ctx) => {
     ctx.session.current_step = steps.SALARY;
     ctx.session.userData.test = ctx.update.message.text;
 
-    // await ctx.replyWithPhoto({ source: "./img/salary.png" });
+    await ctx.replyWithPhoto({ source: "./img/salary.png" });
     return ctx.reply(messages.salary, renderButtons(buttons.salary));
   }
 });
@@ -109,7 +109,10 @@ const onClickButton = (id, title) => {
       }
 
       if (ctx.session.current_step === steps.CHECK_RAM) {
-        if (id.includes("failed")) return ctx.reply(messages.lastMessage);
+        if (id.includes("failed")) {
+          ctx.session.current_step = steps.FINISH;
+          return ctx.reply(messages.doNotEnoughRam);
+        }
       }
 
       if (ctx.session.current_step === steps.EXPERIENCE) {
@@ -121,7 +124,7 @@ const onClickButton = (id, title) => {
         ctx.session.current_step = steps.ENGLISH_LVL;
         ctx.session.userData.experience = title;
 
-        // await ctx.replyWithPhoto({ source: "./img/english_lvl.png" });
+        await ctx.replyWithPhoto({ source: "./img/english_lvl.png" });
         return ctx.reply(messages.englishLvl, renderButtons(buttons.englishLvl));
       }
 
@@ -136,7 +139,7 @@ const onClickButton = (id, title) => {
         ctx.session.current_step = steps.TEST;
 
         if (id.includes("success")) {
-          // await ctx.replyWithPhoto({ source: "./img/test.png" });
+          await ctx.replyWithPhoto({ source: "./img/test.png" });
           return ctx.reply(messages.test);
         }
         if (id.includes("failed")) {
